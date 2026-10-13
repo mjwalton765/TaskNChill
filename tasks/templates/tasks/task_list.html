@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Task N Chill</title>
+    <link rel="stylesheet" href="{% static 'tasks/style.css' %}">
+</head>
+<body>
+    <main>
+        <h1>Task N Chill</h1>
+        <p class="subtitle">Your tasks, one step at a time.</p>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Add task</button>
+        </form>
+
+        <ul class="task-list">
+            {% for task in tasks %}
+                <li class="task-item{% if task.completed %} completed{% endif %}">
+                    <p class="task-title">
+                        {{ task.title }}
+                        {% if task.completed %}— Complete{% endif %}
+                    </p>
+
+                    <div class="task-actions">
+                        <form method="post" action="{% url 'toggle_task' task.id %}">
+                            {% csrf_token %}
+                            <button type="submit">
+                                {% if task.completed %}
+                                    Mark unfinished
+                                {% else %}
+                                    Mark complete
+                                {% endif %}
+                            </button>
+                        </form>
+
+                        <form method="post" action="{% url 'delete_task' task.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="delete-button">
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </li>
+            {% empty %}
+                <li class="empty-state">No tasks yet. Add one above to get started.</li>
+            {% endfor %}
+        </ul>
+    </main>
+</body>
+</html>

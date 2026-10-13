@@ -2,3 +2,5 @@
 __pycache__/
 *.pyc
 django.log
+db.sqlite3
+.env
