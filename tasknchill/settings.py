@@ -9,8 +9,6 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Local development defaults.
-# AWS will supply a private secret key and turn debugging off.
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
@@ -121,7 +119,7 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files, including CSS
+# Static files and CSS
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -138,6 +136,6 @@ STORAGES = {
 }
 
 
-# Default database primary key
+# Database key
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
