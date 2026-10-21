@@ -1,0 +1,17 @@
+{% extends 'tasks/base.html' %}
+
+{% block title %}Edit task | Task N Chill{% endblock %}
+
+{% block content %}
+    <h2>Edit task</h2>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="return_token" value="{{ return_token }}">
+        <input type="hidden" name="edit_version" value="{{ edit_version }}">
+        {{ form.as_p }}
+        <div class="task-actions">
+            <button type="submit">Save changes</button>
+            <a class="button secondary" href="{{ return_to }}">Cancel</a>
+        </div>
+    </form>
+{% endblock %}

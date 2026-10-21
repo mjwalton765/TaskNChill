@@ -1,0 +1,19 @@
+{% extends 'tasks/base.html' %}
+{% block title %}Delete history | Task N Chill{% endblock %}
+{% block content %}
+<h2>{% if clear_all %}Clear all history?{% else %}Delete selected history?{% endif %}</h2>
+<p>This permanently removes {{ count }} history entr{{ count|pluralize:"y,ies" }}{% if clear_all %} across every page{% endif %}. Your tasks and repeat numbering will stay unchanged.</p>
+{% if clear_all %}<p>New entries recorded after opening this confirmation will be kept.</p>{% endif %}
+{% if entries %}
+<ul>{% for entry in entries %}<li>{{ entry.task_title }} &mdash; {{ entry.get_action_display }} &mdash; {% include 'tasks/task_time.html' with value=entry.occurred_at %}</li>{% endfor %}</ul>
+{% endif %}
+<form method="post" action="{% url 'delete_history' %}">
+    {% csrf_token %}
+    <input type="hidden" name="confirmed" value="yes">
+    <input type="hidden" name="confirmation_token" value="{{ confirmation_token }}">
+    <div class="task-actions">
+        <button type="submit" class="delete-button">{% if clear_all %}Clear all history{% else %}Delete selected history{% endif %}</button>
+        <a class="button secondary" href="{{ return_to }}">Cancel</a>
+    </div>
+</form>
+{% endblock %}

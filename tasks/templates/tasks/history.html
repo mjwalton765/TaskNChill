@@ -1,0 +1,48 @@
+{% extends 'tasks/base.html' %}
+{% block title %}History | Task N Chill{% endblock %}
+{% block content %}
+<section id="task-results" data-list-url="{{ list_url }}" aria-labelledby="history-heading">
+    <h2 id="history-heading">History ({{ total_entries }})</h2>
+    <p class="list-note">Newest actions first. History records actions from when this feature was added.</p>
+    <form method="post" action="{% url 'delete_history' %}" class="selection-form">
+        {% csrf_token %}
+        <input type="hidden" name="selection_token" value="{{ selection_token }}">
+        {% if entries %}
+        <div class="selection-toolbar">
+            <label class="select-all"><input type="checkbox" data-select-all> Select all displayed</label>
+            <span data-selection-count role="status">0 selected</span>
+            <div class="task-actions">
+                <button name="action" value="selected" class="delete-button" data-needs-selection>Delete selected history</button>
+                <button name="action" value="all" class="delete-button">Clear all history</button>
+            </div>
+        </div>
+        <div class="history-columns history-headings" aria-hidden="true">
+            <span>Task</span><span>Action</span><span>Date and time</span>
+        </div>
+        {% endif %}
+        <ul class="history-list">
+            {% for entry in entries %}
+            <li>
+                <div class="history-columns">
+                    <label class="history-selection"><input type="checkbox" name="selected" value="{{ entry.pk }}" aria-label="Select {{ entry.task_title }}: {{ entry.get_action_display }}"><span>{{ entry.task_title }}</span></label>
+                    <span class="history-action">{{ entry.get_action_display }}</span>
+                    <span>{% include 'tasks/task_time.html' with value=entry.occurred_at %}</span>
+                </div>
+                {% if entry.details %}
+                <details class="history-details"><summary>Details</summary><p>{{ entry.details|linebreaksbr }}</p></details>
+                {% endif %}
+            </li>
+            {% empty %}
+            <li class="empty-state">No history entries. New task actions will appear here.</li>
+            {% endfor %}
+        </ul>
+    </form>
+    <nav class="pagination" aria-label="History pages">
+        <span>Entries {{ page.start_index }}&ndash;{{ page.end_index }} of {{ total_entries }}</span>
+        <div class="task-actions">
+            {% if page.has_previous %}<a class="button secondary" data-list-page="previous" href="{{ previous_url }}">Previous</a>{% endif %}
+            {% if page.has_next %}<a class="button secondary" data-list-page="next" href="{{ next_url }}">Next</a>{% endif %}
+        </div>
+    </nav>
+</section>
+{% endblock %}

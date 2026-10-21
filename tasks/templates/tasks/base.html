@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Task N Chill{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'tasks/style.css' %}?v=1">
+</head>
+<body>
+    <main>
+        <h1>Task N Chill</h1>
+        <p class="subtitle">Your tasks, Made Simple.</p>
+        <nav class="page-navigation" aria-label="Main navigation">
+            {% with page=request.resolver_match.url_name %}
+            <a class="button secondary" href="{% url 'task_list' %}"{% if page == 'task_list' %} aria-current="page"{% endif %}>Home</a>
+            <a class="button secondary" href="{% url 'add_task' %}"{% if page == 'add_task' %} aria-current="page"{% endif %}>Add task</a>
+            <a class="button secondary" href="{% url 'find_tasks' %}"{% if page == 'find_tasks' or page == 'search_results' %} aria-current="page"{% endif %}>Find tasks</a>
+            <a class="button secondary" href="{% url 'completed_tasks' %}"{% if page == 'completed_tasks' %} aria-current="page"{% endif %}>Completed</a>
+            <a class="button secondary" href="{% url 'deleted_tasks' %}"{% if page == 'deleted_tasks' %} aria-current="page"{% endif %}>Deleted</a>
+            <a class="button secondary" href="{% url 'task_history' %}"{% if page == 'task_history' %} aria-current="page"{% endif %}>History</a>
+            {% endwith %}
+        </nav>
+        <div id="task-messages" aria-live="polite">
+        {% for message in messages %}
+            <p class="notice" data-message-level="{{ message.tags }}" role="status">{{ message }}</p>
+        {% endfor %}
+        </div>
+        {% block content %}{% endblock %}
+    </main>
+    <script src="{% static 'tasks/selection.js' %}?v=1" defer></script>
+</body>
+</html>

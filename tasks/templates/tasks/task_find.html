@@ -1,0 +1,13 @@
+{% extends 'tasks/base.html' %}
+{% block title %}Find tasks | Task N Chill{% endblock %}
+{% block content %}
+    <h2>Find tasks</h2>
+    <p>Search by task name or description, or choose filters. Leave everything blank to see all active tasks. Completed and deleted tasks have their own pages.</p>
+    <form method="get" action="{% url 'search_results' %}">
+        {{ filters.as_p }}
+        <div class="task-actions">
+            <button type="submit">Find tasks</button>
+            <a class="button secondary" href="{% url 'task_list' %}">Home</a>
+        </div>
+    </form>
+{% endblock %}

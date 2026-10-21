@@ -1,0 +1,110 @@
+{% extends 'tasks/base.html' %}
+
+{% block content %}
+    <section id="task-results" data-list-url="{{ list_url }}" aria-labelledby="list-heading">
+        <h2 id="list-heading">{{ heading }} ({{ total_tasks }})</h2>
+        {% if is_search %}
+            <div class="task-actions results-navigation">
+                <a class="button secondary" href="{{ refine_url }}">Refine search</a>
+                <a class="button secondary" href="{% url 'task_list' %}">Home</a>
+            </div>
+        {% elif scope == 'active' %}
+            <p class="list-note">Newest tasks first. Click a task name for its description and dates.</p>
+        {% elif scope == 'deleted' %}
+            <p class="list-note">Restore returns tasks as Started. Repeat creates new Pending copies. Permanent deletion cannot be undone.</p>
+        {% elif scope == 'completed' %}
+            <p class="list-note">Restore returns tasks as Started. Repeat creates new Pending copies.</p>
+        {% endif %}
+        <form method="post" action="{% url 'task_action' %}" class="selection-form">
+            {% csrf_token %}
+            <input type="hidden" name="selection_token" value="{{ selection_token }}">
+        {% if tasks %}
+            <div class="selection-toolbar">
+                <label class="select-all"><input type="checkbox" data-select-all> Select all displayed</label>
+                <span data-selection-count role="status">0 selected</span>
+                <div class="task-actions">
+                    {% if scope == 'deleted' %}
+                        <button name="action" value="restore" data-needs-selection>Restore</button>
+                        <button name="action" value="purge" class="delete-button" data-needs-selection>Permanently delete</button>
+                    {% else %}
+                        <button name="action" value="edit" data-single-selection>Edit</button>
+                        {% if scope == 'active' %}
+                            <button name="action" value="start" data-needs-selection>Mark started</button>
+                            <button name="action" value="complete" data-needs-selection>Mark complete</button>
+                        {% else %}
+                            <button name="action" value="restore" data-needs-selection>Restore</button>
+                        {% endif %}
+                        <button name="action" value="delete" class="delete-button" data-needs-selection>Delete</button>
+                    {% endif %}
+                    <button name="action" value="repeat" data-needs-selection>Repeat task</button>
+                </div>
+            </div>
+            {% if is_search %}
+            <div class="sort-caption">Sort by: <a data-sort="newest" href="{{ newest_url }}">Newest first</a></div>
+            <div class="task-columns task-column-headings">
+                <span class="task-heading">Task</span>
+                {% for link in sort_links %}
+                    <a class="sort-heading{% if link.active %} active{% endif %}"
+                       data-sort="{{ link.key }}" href="{{ link.url }}"
+                       aria-label="Sort by {{ link.label }}"
+                       {% if link.active %}aria-current="true"{% endif %}>
+                        {{ link.label }} <span aria-hidden="true">{{ link.indicator }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+            {% else %}
+                <div class="task-columns task-column-headings">
+                    <span class="task-heading">Task</span>
+                    <span>Category</span>
+                    <span>Priority</span>
+                    <span>Status</span>
+                </div>
+            {% endif %}
+        {% endif %}
+        <ul class="task-list">
+            {% for task in tasks %}
+                <li class="task-item{% if task.completed %} completed{% endif %}">
+                    <input class="row-checkbox" type="checkbox" name="selected" value="{{ task.pk }}" id="task-{{ task.pk }}" aria-label="Select {{ task.title }}">
+                    <details class="task-details">
+                        <summary class="task-columns task-summary">
+                            <span class="task-title">{{ task.title }}</span>
+                            <span class="task-field"><span class="mobile-field-label">Category</span>{{ task.get_category_display|default:'Uncategorized' }}</span>
+                            <span class="task-field"><span class="mobile-field-label">Priority</span>{{ task.get_priority_display }}</span>
+                            <span class="task-field"><span class="mobile-field-label">Status</span><span class="badge">{% if scope == 'deleted' %}Deleted{% else %}{{ task.get_status_display }}{% endif %}</span>
+                                <span class="status-date">{% include 'tasks/task_time.html' with value=task.status_date %}</span>
+                            </span>
+                        </summary>
+                        <div class="task-description">
+                            <strong>Description:</strong>
+                            {% if task.description %}{{ task.description|linebreaksbr }}{% else %}No description.{% endif %}
+                            <dl class="task-dates">
+                                <div><dt>Created</dt><dd>{% include 'tasks/task_time.html' with value=task.created_at %}</dd></div>
+                                <div><dt>Pending</dt><dd>{% include 'tasks/task_time.html' with value=task.pending_at %}</dd></div>
+                                <div><dt>Started</dt><dd>{% include 'tasks/task_time.html' with value=task.started_at %}</dd></div>
+                                <div><dt>Completed</dt><dd>{% include 'tasks/task_time.html' with value=task.completed_at %}</dd></div>
+                                {% if task.restored_at %}<div><dt>Last restored</dt><dd>{% include 'tasks/task_time.html' with value=task.restored_at %}</dd></div>{% endif %}
+                                {% if task.deleted_at %}<div><dt>Last deleted</dt><dd>{% include 'tasks/task_time.html' with value=task.deleted_at %}</dd></div>{% endif %}
+                                <div><dt>Last updated</dt><dd>{% include 'tasks/task_time.html' with value=task.updated_at %}</dd></div>
+                            </dl>
+                        </div>
+                    </details>
+                </li>
+            {% empty %}
+                <li class="empty-state">
+                    {% if is_search %}No tasks match your search or filters.
+                    {% elif scope == 'completed' %}No completed tasks yet.
+                    {% elif scope == 'deleted' %}No deleted tasks.
+                    {% else %}No active tasks. Choose Add task to get started.{% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+        </form>
+        <nav class="pagination" aria-label="Task pages">
+            <span>Items {{ page.start_index }}–{{ page.end_index }} of {{ total_tasks }}</span>
+            <div class="task-actions">
+                {% if page.has_previous %}<a class="button secondary" data-list-page="previous" href="{{ previous_url }}">Previous</a>{% endif %}
+                {% if page.has_next %}<a class="button secondary" data-list-page="next" href="{{ next_url }}">Next</a>{% endif %}
+            </div>
+        </nav>
+    </section>
+{% endblock %}
